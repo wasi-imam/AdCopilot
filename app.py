@@ -207,15 +207,26 @@ with tab1:
 
         with st.spinner("Calculating viral score..."):
             score_data = calculate_viral_score(ad_draft)
+
+            # NEW: Check error flag — pehle nahi tha
+            if score_data.get("error"):
+                st.error(f"Scoring failed: {score_data['error_msg']}")
+                st.stop()
+
             st.session_state.score_data = score_data
 
         with st.spinner("Running 2-agent analysis and rewrite..."):
             pipeline_result = run_full_pipeline(ad_draft, product_desc)
-            st.session_state.gaps         = pipeline_result["gaps"]
-            st.session_state.rewritten_ad = pipeline_result["rewritten_ad"]
-            st.session_state.changes_made = pipeline_result["changes_made"]
-            st.session_state.analysis_done = True
 
+            # NEW: Check success flag
+            if not pipeline_result.get("success", True):
+                st.error("Analysis failed — please try again in a moment.")
+                st.stop()
+
+            st.session_state.gaps          = pipeline_result["gaps"]
+            st.session_state.rewritten_ad  = pipeline_result["rewritten_ad"]
+            st.session_state.changes_made  = pipeline_result["changes_made"]
+            st.session_state.analysis_done = True
         st.success("Analysis complete! See results in the next tabs.")
 
     # Show competitor ads if analysis done
