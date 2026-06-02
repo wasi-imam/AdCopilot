@@ -1,215 +1,283 @@
 # scorer.py
-# Purpose: Calculate a viral score (0-100) for any ad copy.
-# Approach: Deterministic weighted formula + LLM-based metric extraction.
-# Why not pure LLM? LLM alone gives random numbers — no engineering control.
-# Our approach: LLM extracts variables, formula computes final score.
+# Purpose: Calculate viral score (0-100) for any ad copy.
+#
+# CHANGES FROM PHASE 1 VERSION:
+# 1. Config imported     — no hardcoded values
+# 2. Cache added         — same ad = instant result, no API call
+# 3. Logger added        — print() replaced with proper logging
 
 import os
 import json
+import time
+
 from groq import Groq
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from dotenv import load_dotenv
 
+# --- NEW imports (Phase 2) ---
+from config import (
+    LLM_MODEL,
+    LLM_TEMPERATURE_SCORER,
+    MAX_RETRIES,
+    RETRY_DELAY,
+    MAX_AD_WORDS,
+    MIN_AD_WORDS,
+    WEIGHT_HOOK,
+    WEIGHT_SENTIMENT,
+    WEIGHT_KEYWORDS,
+    WEIGHT_LENGTH,
+    WEIGHT_CLARITY,
+    MAX_TOKENS_SCORER
+)
+# WHY: Pehle yeh values scorer.py mein hardcoded thi
+# Ab config.py se aati hain — ek jagah se control
+
+from utils.cache import get_cached, set_cache
+# WHY: Same ad dobara aaye toh LLM call nahi karni
+# Cache se instant result milega
+
+from utils.logger import scorer_logger
+# WHY: print() ki jagah proper logging
+
 load_dotenv()
-# load_dotenv() — .env file padhta hai aur
-# GROQ_API_KEY environment variable set karta hai
-# iske baad os.environ["GROQ_API_KEY"] accessible ho jaata hai
 
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-# Groq client banao — yeh LLM API se baat karta hai
-# api_key — .env se automatically load hoti hai
 
 
-# --- Pydantic Model --- 
+# ============================================================
+# Pydantic Model — same as before
+# ============================================================
 class AdMetrics(BaseModel):
-    hook_strength: int
-    # Hook kitna strong hai — 1 to 10
-    # Strong hook = reader ruk jaaye aur padhe
-
+    hook_strength:       int
     sentiment_stability: int
-    # Emotional tone consistent hai ya beech mein shift hoti hai — 1 to 10
-    # Inconsistent tone = reader confused ho jaata hai
-
-    keyword_density: int
-    # Relevant keywords naturally included hain ya nahi — 1 to 10
-    # Too few = SEO weak, too many = spammy lagta hai
-
-    clarity: int
-    # Message crystal clear hai ya confusing — 1 to 10
-    # Reader ko 1 read mein samajh aana chahiye
-
-# BaseModel — Pydantic class
-# Purpose: LLM ka JSON output validate karna
-# Agar LLM "hook_strength": "eight" return kare (string instead of int)
-# Pydantic automatically error throw karega — silent bugs nahi honge
+    keyword_density:     int
+    clarity:             int
 
 
+# ============================================================
+# Input Validator — same as Phase 1
+# ============================================================
+def validate_ad_input(ad_copy: str) -> tuple:
+    """
+    Validate ad copy before processing.
+    Returns: (is_valid: bool, error_message: str)
+    """
+    if not ad_copy or not ad_copy.strip():
+        return False, "Ad copy cannot be empty."
+
+    word_count = len(ad_copy.strip().split())
+
+    if word_count < MIN_AD_WORDS:
+        # MIN_AD_WORDS — config.py se aa raha hai
+        # Pehle: MIN_AD_LENGTH = 3 hardcoded tha yahan
+        return False, f"Ad copy too short — minimum {MIN_AD_WORDS} words required."
+
+    if word_count > MAX_AD_WORDS:
+        # MAX_AD_WORDS — config.py se aa raha hai
+        # Pehle: MAX_AD_LENGTH = 200 hardcoded tha yahan
+        return False, f"Ad copy too long — maximum {MAX_AD_WORDS} words. Your ad: {word_count} words."
+
+    return True, ""
+
+
+# ============================================================
+# JSON Parser — same as Phase 1
+# ============================================================
+def _parse_llm_json(raw_output: str) -> dict:
+    """Safely parse LLM JSON output."""
+    cleaned = raw_output.strip()
+
+    if "```" in cleaned:
+        parts = cleaned.split("```")
+        for part in parts:
+            part = part.strip()
+            if part.startswith("json"):
+                part = part[4:].strip()
+            if part.startswith("{"):
+                cleaned = part
+                break
+
+    start = cleaned.find("{")
+    end   = cleaned.rfind("}") + 1
+
+    if start != -1 and end > start:
+        cleaned = cleaned[start:end]
+
+    return json.loads(cleaned)
+
+
+# ============================================================
+# LLM Metric Extraction — UPGRADED in Phase 2
+# WHAT CHANGED:
+#   1. Cache check added at the top
+#   2. Cache store added before return
+#   3. Hardcoded values replaced with config values
+#   4. print() replaced with logger
+# ============================================================
 def extract_metrics_from_llm(ad_copy: str) -> AdMetrics:
     """
-    Send ad copy to LLM and extract structured metrics as JSON.
-    LLM sirf variables extract karta hai — score calculate nahi karta.
+    Extract ad metrics using LLM.
+    Now checks cache first — skips LLM if already analyzed.
     """
 
+    # --- NEW: Cache check (Phase 2) ---
+    # WHY: Agar same ad pehle analyze ho chuka hai
+    #      toh LLM call waste hai — cache se lo
+    # WHERE: Function ke bilkul shuruwat mein
+    cached = get_cached(f"scorer:{ad_copy}")
+    # "scorer:" prefix — different functions ki
+    # entries mix na ho jaayein cache mein
+
+    if cached:
+        scorer_logger.info("Cache hit — scorer skipping LLM call")
+        return AdMetrics(**cached)
+        # Cached result return karo — zero API call
+
+    # --- Prompt ---
     prompt = f"""You are an expert marketing analyst. Analyze the following ad copy and return a JSON object with exactly these 4 keys:
 
-- hook_strength (integer 1-10): How compelling is the opening line? Does it make you stop scrolling?
-- sentiment_stability (integer 1-10): Is the emotional tone consistent throughout? Or does it shift randomly?
-- keyword_density (integer 1-10): Are relevant keywords naturally included without feeling forced or spammy?
-- clarity (integer 1-10): Is the core message immediately clear after one read?
+- hook_strength (integer 1-10): How compelling is the opening line?
+- sentiment_stability (integer 1-10): Is the emotional tone consistent?
+- keyword_density (integer 1-10): Are relevant keywords naturally included?
+- clarity (integer 1-10): Is the core message immediately clear?
 
-Ad Copy:
-\"{ad_copy}\"
+Ad Copy: "{ad_copy}"
 
-Return ONLY a valid JSON object. No explanation. No markdown. No extra text.
-Example output: {{"hook_strength": 8, "sentiment_stability": 7, "keyword_density": 6, "clarity": 9}}"""
+Return ONLY valid JSON. No explanation. No markdown.
+Example: {{"hook_strength": 8, "sentiment_stability": 7, "keyword_density": 6, "clarity": 9}}"""
 
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        # Groq ka fastest free model
-        # llama-3.3-70b — Meta ka 70 billion parameter model
+    # --- Retry loop ---
+    last_error = None
 
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        temperature=0.1,
-        # temperature — LLM ki "creativity" control karta hai
-        # 0.0 = deterministic, always same output
-        # 1.0 = very creative, random
-        # 0.1 — almost deterministic — scoring ke liye best
-        # hum chahte hain consistent results, creativity nahi
+    for attempt in range(MAX_RETRIES):
+        # MAX_RETRIES — config.py se (pehle hardcoded 3 tha)
+        try:
+            response = client.chat.completions.create(
+                model=LLM_MODEL,
+                # CHANGED: "llama-3.3-70b-versatile" → LLM_MODEL from config
 
-        max_tokens=150
-        # sirf JSON chahiye — 150 tokens kaafi hain
-        # zyada tokens = zyada cost aur time
+                messages=[{"role": "user", "content": prompt}],
+
+                temperature=LLM_TEMPERATURE_SCORER,
+                # CHANGED: 0.1 → LLM_TEMPERATURE_SCORER from config
+
+                max_tokens=MAX_TOKENS_SCORER
+                # CHANGED: 150 → MAX_TOKENS_SCORER from config (80)
+                # Token reduction — sirf JSON chahiye
+            )
+
+            raw_output = response.choices[0].message.content.strip()
+            parsed     = _parse_llm_json(raw_output)
+            metrics    = AdMetrics(**parsed)
+
+            # --- NEW: Store in cache (Phase 2) ---
+            # WHY: Next time same ad aaye — cache se milega
+            # WHERE: Successful result ke baad, return se pehle
+            set_cache(f"scorer:{ad_copy}", parsed)
+
+            return metrics
+
+        except ValidationError as e:
+            last_error = f"Invalid types from LLM: {e}"
+            scorer_logger.warning(f"Attempt {attempt + 1} failed (validation): {last_error}")
+
+        except json.JSONDecodeError as e:
+            last_error = f"Invalid JSON from LLM: {e}"
+            scorer_logger.warning(f"Attempt {attempt + 1} failed (JSON): {last_error}")
+
+        except Exception as e:
+            last_error = f"API call failed: {e}"
+            scorer_logger.warning(f"Attempt {attempt + 1} failed (API): {last_error}")
+
+        if attempt < MAX_RETRIES - 1:
+            scorer_logger.info(f"Retrying in {RETRY_DELAY}s...")
+            time.sleep(RETRY_DELAY)
+            # RETRY_DELAY — config.py se (pehle hardcoded 2 tha)
+
+    # --- Fallback ---
+    scorer_logger.error(f"All {MAX_RETRIES} attempts failed. Using fallback metrics.")
+    return AdMetrics(
+        hook_strength=5,
+        sentiment_stability=5,
+        keyword_density=5,
+        clarity=5
     )
 
-    raw_output = response.choices[0].message.content.strip()
-    # .choices[0] — pehla (aur akela) response
-    # .message.content — actual text
-    # .strip() — extra whitespace/newlines remove karo
 
-    # Clean the output — sometimes LLM adds markdown backticks
-    if raw_output.startswith("```"):
-        # agar LLM ne ```json ... ``` wrap kiya toh hata do
-        raw_output = raw_output.split("```")[1]
-        if raw_output.startswith("json"):
-            raw_output = raw_output[4:]
-        # "json\n{...}" se "json" hata do
-
-    parsed = json.loads(raw_output)
-    # json.loads() — JSON string ko Python dictionary mein convert karo
-    # json.load()  — file se padhta hai
-    # json.loads() — string se padhta hai (s = string)
-
-    return AdMetrics(**parsed)
-    # **parsed — dictionary ko keyword arguments mein unpack karo
-    # AdMetrics(hook_strength=8, sentiment_stability=7, ...)
-    # Pydantic validate karega — wrong types pe error
-
-
+# ============================================================
+# Length Score — same as Phase 1, no change
+# ============================================================
 def calculate_length_score(ad_copy: str) -> int:
-    """
-    Calculate length penalty score based on word count.
-    Sweet spot: 15 to 50 words — not too short, not too long.
-    """
+    """Calculate length penalty score. Sweet spot: 15-50 words."""
     word_count = len(ad_copy.split())
-    # .split() — words ki list banao
-    # len() — count karo
 
     if 15 <= word_count <= 50:
-        # Sweet spot — perfect length
         return 10
-
     elif word_count < 15:
-        # Too short — reader ko enough info nahi milti
-        score = max(1, word_count - 5)
-        # max(1, ...) — minimum 1 return karo, kabhi 0 nahi
-        # word_count=10 → score=5
-        # word_count=6  → score=1
-        return score
-
+        return max(1, word_count - 5)
     else:
-        # Too long — reader attention kho deta hai
         penalty = (word_count - 50) // 5
-        # har 5 extra words pe 1 point penalty
-        # word_count=55 → penalty=1 → score=9
-        # word_count=80 → penalty=6 → score=4
-        score = max(1, 10 - penalty)
-        return score
+        return max(1, 10 - penalty)
 
 
+# ============================================================
+# Main Scoring Function — UPGRADED in Phase 2
+# WHAT CHANGED:
+#   Hardcoded weight values → config values
+# ============================================================
 def calculate_viral_score(ad_copy: str) -> dict:
     """
-    Main function — calculate complete viral score for an ad.
-
-    Steps:
-    1. Calculate length score (deterministic)
-    2. Extract LLM metrics (AI-powered)
-    3. Apply weighted formula (deterministic)
-    4. Return full breakdown
-
-    Returns:
-        dict with total_score and full breakdown
+    Calculate complete viral score for an ad.
+    Returns dict with score, grade, breakdown.
     """
 
-    # --- Step 1: Length score ---
+    # Input validation — same as Phase 1
+    is_valid, error_msg = validate_ad_input(ad_copy)
+    if not is_valid:
+        return {
+            "error":       True,
+            "error_msg":   error_msg,
+            "total_score": 0,
+            "grade":       "N/A",
+            "word_count":  len(ad_copy.split()) if ad_copy else 0,
+            "breakdown": {
+                "length_score":        0,
+                "hook_strength":       0,
+                "sentiment_stability": 0,
+                "keyword_density":     0,
+                "clarity":             0
+            }
+        }
+
     word_count   = len(ad_copy.split())
     length_score = calculate_length_score(ad_copy)
+    metrics      = extract_metrics_from_llm(ad_copy)
 
-    # --- Step 2: LLM metric extraction ---
-    metrics = extract_metrics_from_llm(ad_copy)
-    # metrics.hook_strength       — integer 1-10
-    # metrics.sentiment_stability — integer 1-10
-    # metrics.keyword_density     — integer 1-10
-    # metrics.clarity             — integer 1-10
+    # --- CHANGED: Hardcoded weights → config values ---
+    # PEHLE:                    # ABHI:
+    # W_hook      = 0.30        # W_hook      = WEIGHT_HOOK
+    # W_sentiment = 0.20        # W_sentiment = WEIGHT_SENTIMENT
+    # W_keywords  = 0.20        # W_keywords  = WEIGHT_KEYWORDS
+    # W_length    = 0.15        # W_length    = WEIGHT_LENGTH
+    # W_clarity   = 0.15        # W_clarity   = WEIGHT_CLARITY
+    #
+    # WHY: Config mein ek jagah se sab control hota hai
 
-    # --- Step 3: Weighted formula ---
-    # Weights decide karte hain kaunsa metric zyada important hai
-    # Total weights = 1.0 (100%)
-    W_length    = 0.15
-    # 15% — length important hai but not the most critical factor
-
-    W_hook      = 0.30
-    # 30% — hook MOST important — agar pehli line weak hai,
-    # reader scroll kar deta hai — baki kuch matter nahi karta
-
-    W_sentiment = 0.20
-    # 20% — consistent tone trust build karta hai
-
-    W_keywords  = 0.20
-    # 20% — keywords discoverability aur relevance ke liye
-
-    W_clarity   = 0.15
-    # 15% — message clear hona chahiye
-
-    # Formula — har metric ko 0-100 scale pe convert karo phir weight apply karo
     raw_score = (
-        W_length    * (length_score               * 10) +
-        W_hook      * (metrics.hook_strength      * 10) +
-        W_sentiment * (metrics.sentiment_stability * 10) +
-        W_keywords  * (metrics.keyword_density    * 10) +
-        W_clarity   * (metrics.clarity            * 10)
+        WEIGHT_LENGTH    * (length_score               * 10) +
+        WEIGHT_HOOK      * (metrics.hook_strength      * 10) +
+        WEIGHT_SENTIMENT * (metrics.sentiment_stability * 10) +
+        WEIGHT_KEYWORDS  * (metrics.keyword_density    * 10) +
+        WEIGHT_CLARITY   * (metrics.clarity            * 10)
     )
-    # metric * 10 — 1-10 scale ko 10-100 scale pe convert karo
-    # phir weight multiply karo
-    # sab add karo — final score 0-100
 
     final_score = round(raw_score)
-    # round() — nearest integer pe round karo
 
-    # --- Step 4: Return full breakdown ---
     return {
+        "error":       False,
         "total_score": final_score,
-        # 0-100 — overall viral potential
-
-        "grade": _get_grade(final_score),
-        # A/B/C/D/F — human readable grade
-
-        "word_count": word_count,
-
+        "grade":       _get_grade(final_score),
+        "word_count":  word_count,
         "breakdown": {
             "length_score":        length_score,
             "hook_strength":       metrics.hook_strength,
@@ -217,25 +285,18 @@ def calculate_viral_score(ad_copy: str) -> dict:
             "keyword_density":     metrics.keyword_density,
             "clarity":             metrics.clarity
         },
-        # breakdown — UI mein progress bars ke liye
-
         "weights": {
-            "length":    W_length,
-            "hook":      W_hook,
-            "sentiment": W_sentiment,
-            "keywords":  W_keywords,
-            "clarity":   W_clarity
+            "length":    WEIGHT_LENGTH,
+            "hook":      WEIGHT_HOOK,
+            "sentiment": WEIGHT_SENTIMENT,
+            "keywords":  WEIGHT_KEYWORDS,
+            "clarity":   WEIGHT_CLARITY
         }
-        # weights — transparency ke liye — user dekh sake
-        # ki score kaise calculate hua
     }
 
 
 def _get_grade(score: int) -> str:
-    """
-    Convert numeric score to letter grade.
-    Underscore prefix — private helper function.
-    """
+    """Convert numeric score to letter grade."""
     if score >= 85:
         return "A — Excellent"
     elif score >= 70:

@@ -1,38 +1,79 @@
 # builder.py
 # Purpose: Agent 2 — Rewrite ad copy based on analyst gaps.
 #
-# WHAT CHANGED FROM ORIGINAL:
-# 1. Retry logic added — same pattern as scorer and analyst
-# 2. Response parsing made safer — handles malformed output
-# 3. Fallback result — LLM fail ho toh original ad return karo
-# 4. Input validation — empty gaps handle karo
+# CHANGES FROM PHASE 1:
+# 1. Config imported     — MAX_RETRIES, RETRY_DELAY, LLM_MODEL
+#                          hardcoded nahi — config.py se aata hai
+# 2. Cache added         — same ad + same gaps dobara aaye toh LLM skip
+# 3. Logger added        — print() replaced with builder_logger
+# 4. MAX_RETRIES/DELAY   — file mein define nahi — config se
 
 import os
+import json
 import time
+
 from groq import Groq
 from dotenv import load_dotenv
+
+# --- NEW imports (Phase 2) ---
+from config import (
+    LLM_MODEL,
+    LLM_TEMPERATURE_BUILDER,
+    MAX_RETRIES,
+    RETRY_DELAY,
+    MAX_TOKENS_BUILDER
+)
+# WHY: Pehle builder.py mein yeh tha:
+#   MAX_RETRIES = 3   ← hardcoded
+#   RETRY_DELAY = 2   ← hardcoded
+# Ab config.py se aata hai — ek jagah se control
+# Scorer, analyst, builder — teeno same value use karein
+
+from utils.cache import get_cached, set_cache
+# WHY: Same original_ad + same gaps → same rewrite hoga
+# LLM call baar baar kyun karein — cache se lo
+
+from utils.logger import builder_logger
+# WHY: print() production mein kaam nahi karta
+# Logger — timestamp, level, file save — sab hota hai
 
 load_dotenv()
 
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
-MAX_RETRIES = 3
-RETRY_DELAY = 2
+# NOTE: MAX_RETRIES aur RETRY_DELAY ab yahan define nahi hain
+# Pehle Phase 1 mein yeh tha:
+#   MAX_RETRIES = 3
+#   RETRY_DELAY = 2
+# Ab config.py se import ho raha hai — upar dekho imports mein
 
 
 # ============================================================
-# UPGRADED FUNCTION: rewrite_ad
-# WHAT CHANGED: try-except + retry + fallback added
-# WHERE: Entire function wrapped in retry loop
-# WHY: Pehle LLM fail = crash, ab 3 chances + fallback
+# rewrite_ad — MAIN FUNCTION — UPGRADED IN PHASE 2
+#
+# WHAT CHANGED:
+# 1. Cache check added   — function ke shuruwat mein
+# 2. Cache store added   — successful result ke baad
+# 3. print() → logger   — har jagah
+# 4. LLM call mein      — hardcoded values → config values
+#
+# WHERE exactly:
+# "NEW PHASE 2" comments se mark kiya hai
 # ============================================================
 def rewrite_ad(original_ad: str, gaps: list) -> dict:
     """
     Rewrite ad copy to fix identified gaps.
-    Now handles LLM failures gracefully.
+    Now includes caching and logging.
+
+    Parameters:
+        original_ad : str  — original ad copy
+        gaps        : list — gaps from analyst agent
+
+    Returns:
+        dict with rewritten_ad, changes_made, word_count
     """
 
-    # Edge case — no gaps found
+    # Edge case — no gaps found, same as Phase 1
     if not gaps:
         return {
             "rewritten_ad": original_ad,
@@ -40,18 +81,44 @@ def rewrite_ad(original_ad: str, gaps: list) -> dict:
             "word_count":   len(original_ad.split())
         }
 
-    # Format gap instructions — same as before
+    # --------------------------------------------------------
+    # NEW PHASE 2: Cache check
+    # WHAT: Pehle check karo cache mein result hai ya nahi
+    # WHERE: Gap instructions banane se pehle — shuruwat mein
+    # WHY: Same ad + same gaps → same rewrite hoga
+    #      Builder ka LLM call sabse expensive hai (~500 tokens)
+    #      Cache se instant result — zero cost
+    # --------------------------------------------------------
+    gaps_as_string = json.dumps(gaps, sort_keys=True)
+    # json.dumps() — gaps list ko string mein convert karo
+    # sort_keys=True — keys alphabetically sort karo
+    # WHY sort_keys: ["gap A", "gap B"] aur ["gap B", "gap A"]
+    # same gaps hain — same cache entry use karni chahiye
+    # sort_keys ensure karta hai same result same key bane
+
+    cache_key = f"builder:{original_ad}:{gaps_as_string}"
+    # "builder:" prefix — analyst cache se alag rehta hai
+    # original_ad + gaps — dono milke unique key bante hain
+
+    cached = get_cached(cache_key)
+    if cached:
+        builder_logger.info("Cache hit — builder skipping LLM call")
+        # CHANGED: print() → builder_logger.info()
+        return cached
+        # Stored result return karo — zero API call
+
+    # Format gap instructions — same as Phase 1
+    # .get() use kiya — safe access, crash nahi hoga
     gap_instructions = ""
     for i, gap in enumerate(gaps, 1):
-        # NEW: .get() use kiya — pehle direct access tha
-        # .get() safe hai — key missing ho toh crash nahi
-        severity = gap.get("severity", "medium").upper()
-        gap_text = gap.get("gap", "Improve the ad")
+        severity  = gap.get("severity",        "medium").upper()
+        gap_text  = gap.get("gap",             "Improve the ad")
         reference = gap.get("competitor_does", "Follow best practices")
 
         gap_instructions += f"{i}. [{severity}] Fix: {gap_text}\n"
         gap_instructions += f"   Reference: {reference}\n\n"
 
+    # Prompt — same as Phase 1
     prompt = f"""You are a world-class copywriter specializing in high-converting digital ads.
 
 Rewrite the following ad to fix all identified gaps while preserving the product's identity.
@@ -78,13 +145,21 @@ CHANGES:
 - Change 1
 - Change 2"""
 
-    # NEW: Retry loop — pehle nahi tha
+    # Retry loop
+    # CHANGED: hardcoded 3 → MAX_RETRIES from config
+    # CHANGED: hardcoded 2 → RETRY_DELAY from config
     last_error = None
 
     for attempt in range(MAX_RETRIES):
+        # MAX_RETRIES — config.py se aa raha hai
+        # Pehle: range(3) hardcoded tha
+
         try:
             response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=LLM_MODEL,
+                # CHANGED: "llama-3.3-70b-versatile" → LLM_MODEL
+                # WHY: Config mein ek jagah se model change kar sakte hain
+
                 messages=[
                     {
                         "role": "system",
@@ -95,15 +170,20 @@ CHANGES:
                         "content": prompt
                     }
                 ],
-                temperature=0.7,
-                max_tokens=500
+
+                temperature=LLM_TEMPERATURE_BUILDER,
+                # CHANGED: 0.7 → LLM_TEMPERATURE_BUILDER from config
+                # WHY: Config se control — builder creative hona chahiye
+                # Analyst 0.2 (analytical) — builder 0.7 (creative)
+
+                max_tokens=MAX_TOKENS_BUILDER
+                # CHANGED: 500 → MAX_TOKENS_BUILDER from config
+                # WHY: Config mein tune kar sakte hain
             )
 
             raw_output = response.choices[0].message.content.strip()
 
-            # NEW: Safer response parsing
-            # WHAT CHANGED: Multiple separator checks added
-            # WHY: LLM kabhi "---" nahi deta — pehle crash
+            # Response parsing — same as Phase 1
             if "---" in raw_output:
                 parts        = raw_output.split("---", 1)
                 rewritten_ad = parts[0].strip()
@@ -115,68 +195,94 @@ CHANGES:
                     changes_text = changes_raw
 
             else:
-                # NEW: Separator nahi mila — poora output ad maano
-                # Pehle yahan crash hota tha
+                # Separator nahi mila — poora output ad maano
                 rewritten_ad = raw_output
                 changes_text = "Ad rewritten to address identified gaps."
 
-            # NEW: Basic validation — rewritten ad empty nahi hona chahiye
+            # Validation — same as Phase 1
             if not rewritten_ad.strip():
                 raise ValueError("Builder returned empty ad copy")
 
-            return {
+            # Build result dict
+            result = {
                 "rewritten_ad": rewritten_ad,
                 "changes_made": changes_text,
                 "word_count":   len(rewritten_ad.split())
             }
 
+            # ----------------------------------------------------
+            # NEW PHASE 2: Cache store
+            # WHAT: Successful result ko cache mein save karo
+            # WHERE: Result ban gaya — return se pehle
+            # WHY: Next time same input aaye → instant result
+            # ----------------------------------------------------
+            set_cache(cache_key, result)
+            builder_logger.info("Rewrite complete — result cached.")
+            # CHANGED: print() → builder_logger.info()
+
+            return result
+
         except ValueError as e:
             last_error = f"Validation: {e}"
-            print(f"Attempt {attempt + 1} failed: {last_error}")
+            builder_logger.warning(f"Attempt {attempt + 1} failed: {last_error}")
+            # CHANGED: print() → builder_logger.warning()
+            # WHY: Retry attempt — warning level
 
         except Exception as e:
             last_error = f"API error: {e}"
-            print(f"Attempt {attempt + 1} failed: {last_error}")
+            builder_logger.warning(f"Attempt {attempt + 1} failed: {last_error}")
 
         if attempt < MAX_RETRIES - 1:
-            print(f"Retrying in {RETRY_DELAY} seconds...")
+            builder_logger.info(f"Retrying in {RETRY_DELAY}s...")
+            # CHANGED: print() → builder_logger.info()
             time.sleep(RETRY_DELAY)
+            # RETRY_DELAY — config.py se (pehle 2 hardcoded tha)
 
-    # NEW: Fallback — pehle nahi tha
-    # Sab fail — original ad return karo with error note
-    print(f"Builder failed after {MAX_RETRIES} attempts. Returning original.")
+    # All retries failed — fallback
+    builder_logger.error(
+        f"Builder failed after {MAX_RETRIES} attempts. Returning original."
+    )
+    # CHANGED: print() → builder_logger.error()
+    # WHY: Complete failure — error level
+
     return {
         "rewritten_ad": original_ad,
-        "changes_made": f"Rewrite service temporarily unavailable. Original ad returned.\nError: {last_error}",
+        "changes_made": f"Rewrite unavailable — original returned.\nError: {last_error}",
         "word_count":   len(original_ad.split())
     }
 
 
 # ============================================================
-# UPGRADED FUNCTION: run_full_pipeline
-# WHAT CHANGED: try-except wrapper added around full pipeline
-# WHERE: Entire pipeline wrapped
-# WHY: Agar kuch bhi fail ho — app.py ko clean error mile
+# run_full_pipeline — UPGRADED IN PHASE 2
+#
+# WHAT CHANGED:
+# 1. Logger added — print() replaced
+# 2. success flag same as Phase 1 — no change needed
 # ============================================================
 def run_full_pipeline(user_ad: str, product_description: str) -> dict:
     """
     Run complete 2-agent pipeline: Analyst → Builder.
-    Now returns error info instead of crashing.
+    Returns error info instead of crashing.
     """
     from agents.analyst import analyze_gaps
+    # Import here — circular import se bachne ke liye
 
     try:
-        print("Agent 1 (Analyst) running...")
-        gaps = analyze_gaps(user_ad, product_description)
-        print(f"Gaps identified: {len(gaps)}")
+        builder_logger.info("Agent 1 (Analyst) running...")
+        # CHANGED: print() → builder_logger.info()
 
-        print("Agent 2 (Builder) running...")
+        gaps = analyze_gaps(user_ad, product_description)
+
+        builder_logger.info(f"Gaps identified: {len(gaps)}")
+
+        builder_logger.info("Agent 2 (Builder) running...")
+
         result = rewrite_ad(original_ad=user_ad, gaps=gaps)
-        print("Rewrite complete.")
+
+        builder_logger.info("Pipeline complete.")
 
         return {
             "success":      True,
-            # NEW: success flag — app.py check karega
             "gaps":         gaps,
             "rewritten_ad": result["rewritten_ad"],
             "changes_made": result["changes_made"],
@@ -184,8 +290,9 @@ def run_full_pipeline(user_ad: str, product_description: str) -> dict:
         }
 
     except Exception as e:
-        # NEW: Complete pipeline failure — pehle nahi tha
-        print(f"Pipeline failed: {e}")
+        builder_logger.error(f"Pipeline failed: {e}")
+        # CHANGED: print() → builder_logger.error()
+
         return {
             "success":      False,
             "error":        str(e),
