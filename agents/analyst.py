@@ -16,6 +16,14 @@ import time
 from groq import Groq
 from dotenv import load_dotenv
 
+# Support Streamlit Cloud secrets
+try:
+    import streamlit as st
+    if hasattr(st, "secrets") and "GROQ_API_KEY" in st.secrets:
+        os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
+except Exception:
+    pass
+
 # --- NEW imports (Phase 2) ---
 from config import (
     LLM_MODEL,

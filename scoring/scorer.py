@@ -14,6 +14,18 @@ from groq import Groq
 from pydantic import BaseModel, ValidationError
 from dotenv import load_dotenv
 
+# Support Streamlit Cloud secrets
+# Cloud pe .env nahi hoti — st.secrets se key leni padti hai
+# Module level pe set karo — Groq client se pehle
+try:
+    import streamlit as st
+    if hasattr(st, "secrets") and "GROQ_API_KEY" in st.secrets:
+        os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
+except Exception:
+    pass
+    # Local machine pe streamlit.secrets nahi hota
+    # Exception aaye toh ignore karo — .env se chalega
+
 # --- NEW imports (Phase 2) ---
 from config import (
     LLM_MODEL,
