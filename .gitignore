@@ -9,9 +9,6 @@ venv/
 # Secret API keys — KABHI bhi GitHub pe mat daalna
 .env
 
-# ChromaDB ka data folder
-chroma_db/
-
 # Windows system files
 Thumbs.dbs
 
