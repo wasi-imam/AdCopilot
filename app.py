@@ -11,6 +11,8 @@
 
 import streamlit as st
 import time
+import concurrent.futures
+
 from scoring.scorer    import calculate_viral_score
 from agents.builder    import run_full_pipeline
 from rag.retriever     import get_similar_ads
@@ -412,21 +414,36 @@ with tab1:
             st.session_state.product_desc = product_desc
             st.session_state.original_ad  = ad_draft
 
-        status.info("📊 Step 2/3 — Calculating viral score...")
+        status.info("📊 Step 2/3 — Scoring + Analysis in parallel...")
         with st.spinner(""):
-            score_data = calculate_viral_score(ad_draft)
-
+            # PARALLEL EXECUTION — ThreadPoolExecutor
+            # WHAT: scorer aur analyst dono ek saath chalao
+            # WHY:  Dono independent hain — sequential mein 6 sec, ab 3 sec
+            # HOW:  submit() tasks queue karta hai, result() wait karta hai
+            from agents.analyst import analyze_gaps
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                future_score = executor.submit(calculate_viral_score, ad_draft)
+                future_gaps  = executor.submit(analyze_gaps, ad_draft, product_desc)
+                score_data = future_score.result()
+                gaps       = future_gaps.result()
             if score_data.get("error"):
                 st.error(f"Scoring error: {score_data['error_msg']}")
                 app_logger.error(f"Scoring failed: {score_data['error_msg']}")
                 st.stop()
-
             st.session_state.score_data = score_data
 
-        status.info("🤖 Step 3/3 — Running 2-agent analysis...")
+        status.info("🤖 Step 3/3 — Rewriting your ad...")
         with st.spinner(""):
-            pipeline = run_full_pipeline(ad_draft, product_desc)
-
+            # Builder gaps ka use karta hai — sequential rehna zaroori hai
+            from agents.builder import rewrite_ad
+            result = rewrite_ad(original_ad=ad_draft, gaps=gaps)
+            pipeline = {
+                "success":      True,
+                "gaps":         gaps,
+                "rewritten_ad": result["rewritten_ad"],
+                "changes_made": result["changes_made"],
+                "word_count":   result["word_count"]
+            }
             if not pipeline.get("success", True):
                 st.error("Analysis failed — please try again.")
                 app_logger.error("Pipeline failed")
