@@ -21,7 +21,7 @@ from utils.logger      import app_logger
 # PAGE CONFIG
 # ============================================================
 st.set_page_config(
-    page_title = "Ad Genius Pro",
+    page_title = "AdCopilot",
     page_icon  = "🎯",
     layout     = "wide",
 )
@@ -197,7 +197,7 @@ st.markdown("""
 # ============================================================
 # HEADER
 # ============================================================
-st.markdown('<p class="main-header">🎯 Ad Genius Pro</p>', unsafe_allow_html=True)
+st.markdown('<p class="main-header">🎯 AdCopilot</p>', unsafe_allow_html=True)
 st.markdown(
     '<p class="sub-header">'
     'AI-powered ad optimization — RAG pipeline · Deterministic scoring · 2-agent critique'
