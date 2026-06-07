@@ -1,0 +1,6 @@
+# Dev dependencies — not needed in production
+# Install with: pip install -r requirements-dev.txt
+pytest==8.2.2
+pytest-cov==5.0.0
+pytest-mock==3.14.0
+ 
