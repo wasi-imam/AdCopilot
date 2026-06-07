@@ -260,41 +260,63 @@ def generate_word_diff(original: str, rewritten: str) -> str:
     """
     Generate HTML showing word-level differences.
     Green = added words, Red strikethrough = removed words.
+
+    CHANGED: Set operations → difflib.SequenceMatcher
+    WHY: Set operations order aur repetition ignore karte the.
+         "best best product" → "best product" ko set
+         same maanta tha — koi change nahi dikhata.
+         difflib order-aware aur repetition-aware hai.
     """
+    import difflib
+
     original_words  = original.split()
     rewritten_words = rewritten.split()
 
-    # Find words only in original — removed
-    original_set  = set(w.lower().strip(".,!?") for w in original_words)
-    rewritten_set = set(w.lower().strip(".,!?") for w in rewritten_words)
+    # SequenceMatcher — do sequences compare karta hai
+    # autojunk=False — chhote texts mein junk detection off karo
+    matcher = difflib.SequenceMatcher(
+        None, original_words, rewritten_words, autojunk=False
+    )
 
-    removed_words = original_set - rewritten_set
-    # Set difference — words in original but not in rewritten
-
-    added_words   = rewritten_set - original_set
-    # Words in rewritten but not in original
-
-    # Build highlighted HTML for rewritten ad
     html_parts = []
-    for word in rewritten_words:
-        clean = word.lower().strip(".,!?")
-        if clean in added_words:
-            html_parts.append(
-                f'<span class="word-added">{word}</span>'
-            )
-        else:
-            html_parts.append(word)
+
+    # get_opcodes() — list of (tag, i1, i2, j1, j2) tuples
+    # tag = "equal", "insert", "delete", "replace"
+    # i1:i2 = original mein range
+    # j1:j2 = rewritten mein range
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+
+        if tag == "equal":
+            # Same words — no highlight
+            html_parts.extend(rewritten_words[j1:j2])
+
+        elif tag == "insert":
+            # Words added in rewritten — green highlight
+            for word in rewritten_words[j1:j2]:
+                html_parts.append(
+                    '<span class="word-added">{}</span>'.format(word)
+                )
+
+        elif tag == "delete":
+            # Words removed from original — red strikethrough
+            for word in original_words[i1:i2]:
+                html_parts.append(
+                    '<span class="word-removed">{}</span>'.format(word)
+                )
+
+        elif tag == "replace":
+            # Words changed — old = red, new = green
+            for word in original_words[i1:i2]:
+                html_parts.append(
+                    '<span class="word-removed">{}</span>'.format(word)
+                )
+            for word in rewritten_words[j1:j2]:
+                html_parts.append(
+                    '<span class="word-added">{}</span>'.format(word)
+                )
 
     return " ".join(html_parts)
 
-
-# ============================================================
-# HELPER: Save to history
-# NEW: Pehle nahi tha
-# WHAT: Analysis result history mein save karo
-# WHERE: Successful analysis ke baad call hota hai
-# WHY: User last 5 analyses compare kar sake
-# ============================================================
 def save_to_history(product_desc, original_ad, score_data):
     """Save current analysis summary to session history."""
     import datetime
