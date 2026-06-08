@@ -519,125 +519,171 @@ with tab1:
 with tab2:
     if not st.session_state.analysis_done:
         st.info("👆 Run analysis in Tab 1 first.")
-
     else:
-        col_score, col_breakdown = st.columns([1, 2])
+        # ─────────────────────────────────────────────
+        # EXPLAINABLE SCORECARD
+        # ─────────────────────────────────────────────
+        from scoring.explainable_scorer import calculate_explainable_score
 
-        with col_score:
-            # NEW: Visual score card
-            score = st.session_state.score_data["total_score"]
-            grade = st.session_state.score_data["grade"]
+        # Run explainable scorer — cached after first run
+        expl = calculate_explainable_score(st.session_state.original_ad)
 
-            st.markdown(f"""
-            <div class="score-container">
-                <div class="score-number">{score}</div>
-                <div class="score-grade">{grade}</div>
-                <div style="color:rgba(255,255,255,0.7); font-size:0.8rem; margin-top:0.5rem;">
-                    out of 100
+        if expl.get("error"):
+            st.error(expl.get("error_msg", "Scoring failed."))
+        else:
+            # ── TOP SUMMARY ──
+            score    = expl["total_score"]
+            grade    = expl["grade"]
+            one_liner = expl["one_liner"]
+
+            col_score, col_summary = st.columns([1, 2])
+            with col_score:
+                color = "#2ecc71" if score >= 70 else "#f39c12" if score >= 50 else "#e74c3c"
+                st.markdown(f"""
+                <div style="background:{color}22; border:2px solid {color};
+                     border-radius:16px; padding:24px; text-align:center;">
+                    <div style="font-size:3.5rem; font-weight:900;
+                         color:{color};">{score}</div>
+                    <div style="font-size:1.2rem; font-weight:700;
+                         color:{color};">{grade}</div>
+                    <div style="color:#888; font-size:0.8rem; margin-top:4px;">
+                        out of 100</div>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
+                st.caption(f"Words: {expl['word_count']}")
 
-            wc = st.session_state.score_data["word_count"]
-            st.caption(f"Word count: {wc} words")
+            with col_summary:
+                st.markdown("### Summary")
+                st.info(one_liner)
+                st.markdown("**Top priority fixes:**")
+                for fix in expl["top_3_fixes"]:
+                    st.markdown(
+                        f"**#{fix['priority']} {fix['dimension']}** — "
+                        f"{fix['action']} *({fix['impact']})*"
+                    )
 
-        with col_breakdown:
-            st.markdown('<p class="section-header">Score Breakdown</p>', unsafe_allow_html=True)
+            st.divider()
 
-            breakdown = st.session_state.score_data["breakdown"]
-            labels = {
-                "hook_strength":       "🎣 Hook Strength",
-                "clarity":             "💡 Clarity",
-                "keyword_density":     "🔑 Keyword Density",
-                "sentiment_stability": "😊 Sentiment Stability",
-                "length_score":        "📏 Length Score",
+            # ── DIMENSION BREAKDOWN TABLE ──
+            st.markdown("### Score Breakdown")
+
+            # Header
+            h1, h2, h3, h4 = st.columns([3, 1, 1, 2])
+            h1.markdown("**Dimension**")
+            h2.markdown("**Score**")
+            h3.markdown("**Points**")
+            h4.markdown("**Rating**")
+
+            rating_color = {
+                "Excellent": "🟢",
+                "Good":      "🟢",
+                "Average":   "🟡",
+                "Poor":      "🔴",
+                "Very Poor": "🔴"
             }
 
-            for key, label in labels.items():
-                val = breakdown[key]
-                col_a, col_b = st.columns([3, 1])
-                col_a.write(label)
-                col_b.write(f"**{val}/10**")
-                st.progress(val / 10)
+            for dim in expl["dimensions"]:
+                c1, c2, c3, c4 = st.columns([3, 1, 1, 2])
+                c1.write(dim["dimension"])
+                c2.write(f"{dim['score']}/10")
+                c3.write(f"{dim['weighted']}")
+                icon = rating_color.get(dim["rating"], "⚪")
+                c4.write(f"{icon} {dim['rating']}")
 
-        st.divider()
+            # Total row
+            t1, t2, t3, t4 = st.columns([3, 1, 1, 2])
+            t1.markdown("**TOTAL**")
+            t2.markdown("")
+            t3.markdown(f"**{score}**")
+            t4.markdown("")
 
-        # Gaps section
-        st.markdown('<p class="section-header">Gaps Identified</p>', unsafe_allow_html=True)
+            st.divider()
 
-        high_gaps   = [g for g in st.session_state.gaps if g["severity"] == "high"]
-        medium_gaps = [g for g in st.session_state.gaps if g["severity"] == "medium"]
-        low_gaps    = [g for g in st.session_state.gaps if g["severity"] == "low"]
+            # ── EXPANDABLE DIMENSION CARDS ──
+            st.markdown("### Detailed Analysis")
 
-        for gap in high_gaps:
-            st.markdown(f"""
-            <div class="gap-high">
-                <div class="gap-title">🔴 [HIGH] {gap['gap']}</div>
-                <div class="gap-sub">Competitors do: {gap['competitor_does']}</div>
-            </div>
-            """, unsafe_allow_html=True)
+            icons = {
+                "Hook Strength":        "🎣",
+                "Value Proposition":    "💎",
+                "Call to Action":       "📢",
+                "Emotional Trigger":    "❤️",
+                "Clarity & Readability":"📖",
+                "Length Optimization":  "📏",
+            }
 
-        for gap in medium_gaps:
-            st.markdown(f"""
-            <div class="gap-medium">
-                <div class="gap-title">🟡 [MEDIUM] {gap['gap']}</div>
-                <div class="gap-sub">Competitors do: {gap['competitor_does']}</div>
-            </div>
-            """, unsafe_allow_html=True)
+            for dim in expl["dimensions"]:
+                icon  = icons.get(dim["dimension"], "📊")
+                label = f"{icon} {dim['dimension']} — {dim['score']}/10 — {dim['rating']}"
+                with st.expander(label):
+                    ea, eb = st.columns(2)
+                    with ea:
+                        st.markdown("**📍 Evidence from your ad:**")
+                        st.code(dim["evidence"], language=None)
+                        st.markdown("**❓ Why this score:**")
+                        st.write(dim["reason"])
+                    with eb:
+                        st.markdown("**✅ How to improve:**")
+                        st.info(dim["suggestion"])
+                        pts = dim["weighted"]
+                        st.caption(f"This dimension contributes {pts} pts to total")
 
-        for gap in low_gaps:
-            st.markdown(f"""
-            <div class="gap-low">
-                <div class="gap-title">🟢 [LOW] {gap['gap']}</div>
-                <div class="gap-sub">Competitors do: {gap['competitor_does']}</div>
-            </div>
-            """, unsafe_allow_html=True)
+            st.divider()
 
-        st.divider()
+            # ── ORIGINAL vs REWRITTEN ──
+            st.markdown("### Original vs Optimized Ad")
+            col_orig, col_new = st.columns(2)
+            with col_orig:
+                st.markdown("**🔴 Original Ad**")
+                st.markdown(
+                    f'<div class="ad-box-original">{st.session_state.original_ad}</div>',
+                    unsafe_allow_html=True
+                )
+            with col_new:
+                st.markdown("**🟢 Optimized Ad**")
+                st.markdown(
+                    f'<div class="ad-box-new">{st.session_state.rewritten_ad}</div>',
+                    unsafe_allow_html=True
+                )
 
-        # NEW: Side by side with word diff
-        st.markdown('<p class="section-header">Original vs Optimized</p>', unsafe_allow_html=True)
-
-        col_orig, col_new = st.columns(2)
-
-        with col_orig:
-            st.markdown("**❌ Original Ad**")
+            # ── WORD DIFF ──
+            st.markdown("### Word-level Changes")
+            st.caption("🟢 Green = added words | 🔴 Red strikethrough = removed words")
+            diff_html = generate_word_diff(
+                st.session_state.original_ad,
+                st.session_state.rewritten_ad
+            )
             st.markdown(
-                f'<div class="ad-box-original">{st.session_state.original_ad}</div>',
+                f'<div class="ad-box-new" style="line-height:2;">{diff_html}</div>',
                 unsafe_allow_html=True
             )
 
-        with col_new:
-            st.markdown("**✅ Optimized Ad**")
-            st.markdown(
-                f'<div class="ad-box-new">{st.session_state.rewritten_ad}</div>',
-                unsafe_allow_html=True
-            )
+            st.divider()
 
-        # NEW: Word diff section
-        st.markdown('<p class="section-header">Word-level Changes</p>', unsafe_allow_html=True)
-        st.caption("🟩 Green = added words &nbsp;&nbsp; 🟥 Red strikethrough = removed words")
+            # ── GAPS ──
+            st.markdown("### Gaps Identified")
+            gaps = st.session_state.gaps
+            if gaps:
+                for gap in gaps:
+                    sev   = gap.get("severity", "medium").lower()
+                    color = {"high": "#e74c3c", "medium": "#f39c12", "low": "#2ecc71"}.get(sev, "#888")
+                    icon  = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(sev, "⚪")
+                    st.markdown(
+                        f'<div style="border-left:4px solid {color}; padding:12px; '                        f'margin-bottom:12px; background:{color}11; border-radius:0 8px 8px 0;">'                        f'<strong>{icon} [{sev.upper()}] {gap.get("gap","")}</strong><br>'                        f'<span style="color:#888;">Competitors do: {gap.get("competitor_does","")}</span></div>',
+                        unsafe_allow_html=True
+                    )
 
-        diff_html = generate_word_diff(
-            st.session_state.original_ad,
-            st.session_state.rewritten_ad
-        )
-        st.markdown(
-            f'<div class="ad-box-new" style="line-height:2;">{diff_html}</div>',
-            unsafe_allow_html=True
-        )
+            # ── CHANGES MADE ──
+            st.divider()
+            st.markdown("### Changes Made by AI")
+            changes = st.session_state.changes_made
+            if changes:
+                for line in changes.split("\n"):
+                    line = line.strip()
+                    if line.startswith("-"):
+                        st.markdown(f"• {line[1:].strip()}")
+                    elif line:
+                        st.markdown(line)
 
-        st.divider()
-
-        st.markdown('<p class="section-header">Changes Made</p>', unsafe_allow_html=True)
-        st.write(st.session_state.changes_made)
-
-
-# ============================================================
-# TAB 3 — HISTORY — NEW TAB
-# WHAT: Last 5 analyses ki summary
-# WHY: User compare kar sake — progress dekhe
-# ============================================================
 with tab3:
     st.markdown('<p class="section-header">Analysis History</p>', unsafe_allow_html=True)
 

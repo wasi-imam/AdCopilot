@@ -115,3 +115,22 @@ MAX_TOKENS_ANALYST = 600
 
 MAX_TOKENS_BUILDER = 500
 # Builder needs most — full rewritten ad
+# ============================================================
+# Explainable Scoring Weights
+# ============================================================
+# New 6-dimension system — all must sum to 1.0
+EXPL_WEIGHT_HOOK      = 0.25
+# 25% — hook sabse important, thoda kam kyunki value prop bhi critical
+EXPL_WEIGHT_VALUE     = 0.20
+# 20% — "kyun kharidu" ka jawab
+EXPL_WEIGHT_CTA       = 0.20
+# 20% — "kya karu abhi" ka jawab
+EXPL_WEIGHT_EMOTION   = 0.15
+# 15% — fear, desire, urgency — conversion driver
+EXPL_WEIGHT_CLARITY   = 0.10
+# 10% — deterministic — Flesch formula
+EXPL_WEIGHT_LENGTH    = 0.10
+# 10% — deterministic — word count
+
+MAX_TOKENS_EXPLAINER  = 800
+# Explainable scorer needs more tokens — 6 dimensions + reasons
