@@ -1,0 +1,87 @@
+{
+  "version": "1.0",
+  "created": "2026-06-09",
+  "description": "10 test cases to evaluate AdCopilot improvement",
+  "test_cases": [
+    {
+      "id": "eval_001",
+      "product": "wireless earbuds",
+      "category": "Electronics",
+      "weakness_type": "no_hook",
+      "notes": "Generic opening, no emotion, weak CTA",
+      "ad_copy": "Good earbuds available. Buy now. Sound is clear. Comfortable to wear. Available online. Order today and get fast delivery to your home."
+    },
+    {
+      "id": "eval_002",
+      "product": "running shoes",
+      "category": "Sports & Fitness",
+      "weakness_type": "no_cta",
+      "notes": "Decent hook but no call to action, no urgency",
+      "ad_copy": "Experience the ultimate running shoe. Lightweight design with superior grip. Breathable material keeps your feet cool. Perfect for daily runs and marathons. Available in multiple colors."
+    },
+    {
+      "id": "eval_003",
+      "product": "face wash",
+      "category": "Beauty & Personal Care",
+      "weakness_type": "no_emotion",
+      "notes": "Factual but no emotional trigger, no desire created",
+      "ad_copy": "Face wash with natural ingredients. Removes dirt and oil. Suitable for all skin types. Dermatologist tested. Use twice daily for best results. Buy from our website."
+    },
+    {
+      "id": "eval_004",
+      "product": "food delivery app",
+      "category": "Apps & Services",
+      "weakness_type": "no_value_prop",
+      "notes": "Has CTA but no clear reason to choose this app",
+      "ad_copy": "Order food now. Fast delivery available. Download our app today. Many restaurants available. Order in minutes. Get your food delivered."
+    },
+    {
+      "id": "eval_005",
+      "product": "lipstick",
+      "category": "Beauty & Personal Care",
+      "weakness_type": "all_weak",
+      "notes": "Everything weak — no hook, no value, no emotion, no CTA",
+      "ad_copy": "Lipstick available in red color. Good quality. Long lasting. Buy now."
+    },
+    {
+      "id": "eval_006",
+      "product": "online learning platform",
+      "category": "Education",
+      "weakness_type": "all_weak",
+      "notes": "Very generic, no specifics, no urgency",
+      "ad_copy": "Learn online. Many courses available. Good teachers. Affordable price. Join today and start learning new skills for your career."
+    },
+    {
+      "id": "eval_007",
+      "product": "whey protein",
+      "category": "Sports & Fitness",
+      "weakness_type": "average_overall",
+      "notes": "Decent but missing emotional trigger and urgency",
+      "ad_copy": "Build muscle faster with our premium whey protein. 25g protein per serving. Available in chocolate and vanilla flavors. Trusted by athletes. Order now from our website."
+    },
+    {
+      "id": "eval_008",
+      "product": "smartphone",
+      "category": "Electronics",
+      "weakness_type": "average_overall",
+      "notes": "Has features but hook is weak and no social proof",
+      "ad_copy": "New smartphone with 108MP camera and 5000mAh battery. Fast processor for smooth performance. 5G enabled. Available in 3 storage variants. Buy now at best price."
+    },
+    {
+      "id": "eval_009",
+      "product": "specialty coffee",
+      "category": "Food & Beverage",
+      "weakness_type": "good_hook_weak_cta",
+      "notes": "Strong hook and emotion but weak CTA and no urgency",
+      "ad_copy": "Life is too short for bad coffee. Our single-origin beans are sourced from the finest farms in Coorg and Chikmagalur. Roasted fresh every week. Rich aroma and bold flavor in every cup."
+    },
+    {
+      "id": "eval_010",
+      "product": "gym membership",
+      "category": "Sports & Fitness",
+      "weakness_type": "good_overall",
+      "notes": "Already good — tests if AdCopilot can improve strong ads",
+      "ad_copy": "Stop dreaming, start doing. Join CultFit today and transform your body in 90 days. 200+ workout classes, expert trainers, and a community that pushes you harder. First month FREE. Join now."
+    }
+  ]
+}

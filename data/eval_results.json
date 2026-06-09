@@ -1,0 +1,510 @@
+{
+  "run_id": "run_20260609_055118",
+  "run_at": "2026-06-09 05:51:18",
+  "model": "llama-3.3-70b-versatile",
+  "summary": {
+    "total_tests": 10,
+    "passed": 9,
+    "failed": 1,
+    "errors": 0,
+    "success_rate": 90.0,
+    "avg_improvement": 15.4,
+    "avg_improvement_pct": 32.3,
+    "best_improvement": 40,
+    "best_case_id": "eval_005",
+    "worst_improvement": -2,
+    "worst_case_id": "eval_010",
+    "avg_gap_fix_rate": 30.0,
+    "consistency_std": 10.8,
+    "dim_avg_improvements": {
+      "Hook Strength": 2.4,
+      "Value Proposition": -0.7,
+      "Call to Action": 3.5,
+      "Emotional Trigger": 2.1,
+      "Clarity & Readability": 3.4,
+      "Length Optimization": -2.8
+    }
+  },
+  "results": [
+    {
+      "id": "eval_001",
+      "product": "wireless earbuds",
+      "weakness_type": "no_hook",
+      "original_ad": "Good earbuds available. Buy now. Sound is clear. Comfortable to wear. Available online. Order today and get fast delivery to your home.",
+      "rewritten_ad": "\"Unlock Pure Sound! Clear earbuds, $29.99, buy now!\"",
+      "before_score": 40,
+      "after_score": 56,
+      "improvement": 16,
+      "improvement_pct": 40.0,
+      "before_percentile": 0,
+      "after_percentile": 0,
+      "gap_fix_rate": 20.0,
+      "gaps_identified": 5,
+      "status": "PASS",
+      "dimension_changes": {
+        "Hook Strength": {
+          "before": 2,
+          "after": 6,
+          "change": 4
+        },
+        "Value Proposition": {
+          "before": 6,
+          "after": 4,
+          "change": -2
+        },
+        "Call to Action": {
+          "before": 4,
+          "after": 8,
+          "change": 4
+        },
+        "Emotional Trigger": {
+          "before": 1,
+          "after": 3,
+          "change": 2
+        },
+        "Clarity & Readability": {
+          "before": 4,
+          "after": 10,
+          "change": 6
+        },
+        "Length Optimization": {
+          "before": 10,
+          "after": 2,
+          "change": -8
+        }
+      }
+    },
+    {
+      "id": "eval_002",
+      "product": "running shoes",
+      "weakness_type": "no_cta",
+      "original_ad": "Experience the ultimate running shoe. Lightweight design with superior grip. Breathable material keeps your feet cool. Perfect for daily runs and marathons. Available in multiple colors.",
+      "rewritten_ad": "Unleash Your Inner Champion! \nLightweight, breathable shoes, starting at Rs 8999. \nShop now!",
+      "before_score": 53,
+      "after_score": 74,
+      "improvement": 21,
+      "improvement_pct": 39.6,
+      "before_percentile": 0,
+      "after_percentile": 46,
+      "gap_fix_rate": 40.0,
+      "gaps_identified": 5,
+      "status": "PASS",
+      "dimension_changes": {
+        "Hook Strength": {
+          "before": 6,
+          "after": 8,
+          "change": 2
+        },
+        "Value Proposition": {
+          "before": 8,
+          "after": 6,
+          "change": -2
+        },
+        "Call to Action": {
+          "before": 2,
+          "after": 9,
+          "change": 7
+        },
+        "Emotional Trigger": {
+          "before": 4,
+          "after": 7,
+          "change": 3
+        },
+        "Clarity & Readability": {
+          "before": 2,
+          "after": 8,
+          "change": 6
+        },
+        "Length Optimization": {
+          "before": 10,
+          "after": 6,
+          "change": -4
+        }
+      }
+    },
+    {
+      "id": "eval_003",
+      "product": "face wash",
+      "weakness_type": "no_emotion",
+      "original_ad": "Face wash with natural ingredients. Removes dirt and oil. Suitable for all skin types. Dermatologist tested. Use twice daily for best results. Buy from our website.",
+      "rewritten_ad": "\"99% Pure, Naturally. $9.99 face wash, 4.5-star rated. Buy now!\"",
+      "before_score": 55,
+      "after_score": 69,
+      "improvement": 14,
+      "improvement_pct": 25.5,
+      "before_percentile": 0,
+      "after_percentile": 18,
+      "gap_fix_rate": 20.0,
+      "gaps_identified": 5,
+      "status": "PASS",
+      "dimension_changes": {
+        "Hook Strength": {
+          "before": 4,
+          "after": 6,
+          "change": 2
+        },
+        "Value Proposition": {
+          "before": 6,
+          "after": 8,
+          "change": 2
+        },
+        "Call to Action": {
+          "before": 8,
+          "after": 9,
+          "change": 1
+        },
+        "Emotional Trigger": {
+          "before": 2,
+          "after": 4,
+          "change": 2
+        },
+        "Clarity & Readability": {
+          "before": 4,
+          "after": 8,
+          "change": 4
+        },
+        "Length Optimization": {
+          "before": 10,
+          "after": 6,
+          "change": -4
+        }
+      }
+    },
+    {
+      "id": "eval_004",
+      "product": "food delivery app",
+      "weakness_type": "no_value_prop",
+      "original_ad": "Order food now. Fast delivery available. Download our app today. Many restaurants available. Order in minutes. Get your food delivered.",
+      "rewritten_ad": "Hungry? 50% off first order, 25-min delivery, 500+ restaurants. Download now, get free delivery!",
+      "before_score": 53,
+      "after_score": 77,
+      "improvement": 24,
+      "improvement_pct": 45.3,
+      "before_percentile": 0,
+      "after_percentile": 78,
+      "gap_fix_rate": 40.0,
+      "gaps_identified": 5,
+      "status": "PASS",
+      "dimension_changes": {
+        "Hook Strength": {
+          "before": 4,
+          "after": 8,
+          "change": 4
+        },
+        "Value Proposition": {
+          "before": 6,
+          "after": 9,
+          "change": 3
+        },
+        "Call to Action": {
+          "before": 8,
+          "after": 9,
+          "change": 1
+        },
+        "Emotional Trigger": {
+          "before": 2,
+          "after": 6,
+          "change": 4
+        },
+        "Clarity & Readability": {
+          "before": 2,
+          "after": 6,
+          "change": 4
+        },
+        "Length Optimization": {
+          "before": 10,
+          "after": 6,
+          "change": -4
+        }
+      }
+    },
+    {
+      "id": "eval_005",
+      "product": "lipstick",
+      "weakness_type": "all_weak",
+      "original_ad": "Lipstick available in red color. Good quality. Long lasting. Buy now.",
+      "rewritten_ad": "Bold lips. Confident you. Matte, long-lasting lipstick in 50 shades, Rs 499. Add to bag",
+      "before_score": 38,
+      "after_score": 78,
+      "improvement": 40,
+      "improvement_pct": 105.3,
+      "before_percentile": 0,
+      "after_percentile": 80,
+      "gap_fix_rate": 40.0,
+      "gaps_identified": 5,
+      "status": "PASS",
+      "dimension_changes": {
+        "Hook Strength": {
+          "before": 2,
+          "after": 8,
+          "change": 6
+        },
+        "Value Proposition": {
+          "before": 6,
+          "after": 6,
+          "change": 0
+        },
+        "Call to Action": {
+          "before": 4,
+          "after": 9,
+          "change": 5
+        },
+        "Emotional Trigger": {
+          "before": 1,
+          "after": 7,
+          "change": 6
+        },
+        "Clarity & Readability": {
+          "before": 6,
+          "after": 8,
+          "change": 2
+        },
+        "Length Optimization": {
+          "before": 6,
+          "after": 10,
+          "change": 4
+        }
+      }
+    },
+    {
+      "id": "eval_006",
+      "product": "online learning platform",
+      "weakness_type": "all_weak",
+      "original_ad": "Learn online. Many courses available. Good teachers. Affordable price. Join today and start learning new skills for your career.",
+      "rewritten_ad": "Unlock your career potential with JEE, NEET, and UPSC courses. Join today!",
+      "before_score": 55,
+      "after_score": 60,
+      "improvement": 5,
+      "improvement_pct": 9.1,
+      "before_percentile": 0,
+      "after_percentile": 0,
+      "gap_fix_rate": 0.0,
+      "gaps_identified": 5,
+      "status": "PASS",
+      "dimension_changes": {
+        "Hook Strength": {
+          "before": 4,
+          "after": 6,
+          "change": 2
+        },
+        "Value Proposition": {
+          "before": 6,
+          "after": 4,
+          "change": -2
+        },
+        "Call to Action": {
+          "before": 8,
+          "after": 8,
+          "change": 0
+        },
+        "Emotional Trigger": {
+          "before": 2,
+          "after": 5,
+          "change": 3
+        },
+        "Clarity & Readability": {
+          "before": 4,
+          "after": 8,
+          "change": 4
+        },
+        "Length Optimization": {
+          "before": 10,
+          "after": 6,
+          "change": -4
+        }
+      }
+    },
+    {
+      "id": "eval_007",
+      "product": "whey protein",
+      "weakness_type": "average_overall",
+      "original_ad": "Build muscle faster with our premium whey protein. 25g protein per serving. Available in chocolate and vanilla flavors. Trusted by athletes. Order now from our website.",
+      "rewritten_ad": "Unlock Your Strength: 25g protein/serving, Gold Standard, $29.99. Buy now!",
+      "before_score": 58,
+      "after_score": 70,
+      "improvement": 12,
+      "improvement_pct": 20.7,
+      "before_percentile": 0,
+      "after_percentile": 20,
+      "gap_fix_rate": 40.0,
+      "gaps_identified": 5,
+      "status": "PASS",
+      "dimension_changes": {
+        "Hook Strength": {
+          "before": 6,
+          "after": 8,
+          "change": 2
+        },
+        "Value Proposition": {
+          "before": 8,
+          "after": 6,
+          "change": -2
+        },
+        "Call to Action": {
+          "before": 4,
+          "after": 9,
+          "change": 5
+        },
+        "Emotional Trigger": {
+          "before": 5,
+          "after": 4,
+          "change": -1
+        },
+        "Clarity & Readability": {
+          "before": 2,
+          "after": 8,
+          "change": 6
+        },
+        "Length Optimization": {
+          "before": 10,
+          "after": 6,
+          "change": -4
+        }
+      }
+    },
+    {
+      "id": "eval_008",
+      "product": "smartphone",
+      "weakness_type": "average_overall",
+      "original_ad": "New smartphone with 108MP camera and 5000mAh battery. Fast processor for smooth performance. 5G enabled. Available in 3 storage variants. Buy now at best price.",
+      "rewritten_ad": "\"Unleash Pro Photography. 108MP camera, 5000mAh battery, Rs 9999. Buy now.",
+      "before_score": 56,
+      "after_score": 70,
+      "improvement": 14,
+      "improvement_pct": 25.0,
+      "before_percentile": 0,
+      "after_percentile": 20,
+      "gap_fix_rate": 60.0,
+      "gaps_identified": 5,
+      "status": "PASS",
+      "dimension_changes": {
+        "Hook Strength": {
+          "before": 6,
+          "after": 8,
+          "change": 2
+        },
+        "Value Proposition": {
+          "before": 8,
+          "after": 6,
+          "change": -2
+        },
+        "Call to Action": {
+          "before": 4,
+          "after": 9,
+          "change": 5
+        },
+        "Emotional Trigger": {
+          "before": 2,
+          "after": 4,
+          "change": 2
+        },
+        "Clarity & Readability": {
+          "before": 4,
+          "after": 8,
+          "change": 4
+        },
+        "Length Optimization": {
+          "before": 10,
+          "after": 6,
+          "change": -4
+        }
+      }
+    },
+    {
+      "id": "eval_009",
+      "product": "specialty coffee",
+      "weakness_type": "good_hook_weak_cta",
+      "original_ad": "Life is too short for bad coffee. Our single-origin beans are sourced from the finest farms in Coorg and Chikmagalur. Roasted fresh every week. Rich aroma and bold flavor in every cup.",
+      "rewritten_ad": "\"Elevate your mornings. Rich, single-origin coffee from Rs 299, with free shipping. Brew instantly, no machine needed. Try now, get 10% off first order",
+      "before_score": 67,
+      "after_score": 77,
+      "improvement": 10,
+      "improvement_pct": 14.9,
+      "before_percentile": 16,
+      "after_percentile": 78,
+      "gap_fix_rate": 40.0,
+      "gaps_identified": 5,
+      "status": "PASS",
+      "dimension_changes": {
+        "Hook Strength": {
+          "before": 8,
+          "after": 8,
+          "change": 0
+        },
+        "Value Proposition": {
+          "before": 9,
+          "after": 7,
+          "change": -2
+        },
+        "Call to Action": {
+          "before": 2,
+          "after": 9,
+          "change": 7
+        },
+        "Emotional Trigger": {
+          "before": 6,
+          "after": 6,
+          "change": 0
+        },
+        "Clarity & Readability": {
+          "before": 6,
+          "after": 6,
+          "change": 0
+        },
+        "Length Optimization": {
+          "before": 10,
+          "after": 10,
+          "change": 0
+        }
+      }
+    },
+    {
+      "id": "eval_010",
+      "product": "gym membership",
+      "weakness_type": "good_overall",
+      "original_ad": "Stop dreaming, start doing. Join CultFit today and transform your body in 90 days. 200+ workout classes, expert trainers, and a community that pushes you harder. First month FREE. Join now.",
+      "rewritten_ad": "\"Unleash Your Fitness. Join CultFit: 200+ classes, 30+ formats, 24/7 access, certified trainers, and 3M+ community. Transform in 90 days. First month FREE. Join now.\"",
+      "before_score": 86,
+      "after_score": 84,
+      "improvement": -2,
+      "improvement_pct": -2.3,
+      "before_percentile": 100,
+      "after_percentile": 98,
+      "gap_fix_rate": 0.0,
+      "gaps_identified": 5,
+      "status": "FAIL",
+      "dimension_changes": {
+        "Hook Strength": {
+          "before": 8,
+          "after": 8,
+          "change": 0
+        },
+        "Value Proposition": {
+          "before": 9,
+          "after": 9,
+          "change": 0
+        },
+        "Call to Action": {
+          "before": 9,
+          "after": 9,
+          "change": 0
+        },
+        "Emotional Trigger": {
+          "before": 7,
+          "after": 7,
+          "change": 0
+        },
+        "Clarity & Readability": {
+          "before": 10,
+          "after": 8,
+          "change": -2
+        },
+        "Length Optimization": {
+          "before": 10,
+          "after": 10,
+          "change": 0
+        }
+      }
+    }
+  ]
+}
