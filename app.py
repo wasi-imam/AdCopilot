@@ -563,6 +563,68 @@ with tab2:
                     )
 
             st.divider()
+            # ── BENCHMARK CARD ──
+            from scoring.benchmark_engine import calculate_benchmark
+            bench = calculate_benchmark(
+                user_score     = expl["total_score"],
+                user_dimensions= expl["dimensions"],
+                product_desc   = st.session_state.product_desc
+            )
+
+            pos      = bench["market_position"]
+            pct      = bench["percentile"]
+            ind_avg  = bench["industry_avg"]
+            cat_avg  = bench["category_avg"]
+            cat      = bench["category"]
+            top_score= bench["global_top_score"]
+            top_brand= bench["global_top_brand"]
+            gap_avg  = bench["gap_to_avg"]
+            gap_top  = bench["gap_to_top"]
+            insight  = bench["insight"]
+
+            pos_color = "#2ecc71" if pct >= 60 else "#f39c12" if pct >= 30 else "#e74c3c"
+
+            st.markdown("### Market Position")
+            st.markdown(
+                f'<div style="background:{pos_color}11; border:2px solid {pos_color}; '
+                f'border-radius:12px; padding:16px; margin-bottom:16px;">'                f'<h4 style="color:{pos_color}; margin:0;">'
+                f'{pos} — You beat {pct}% of competitor ads</h4>'                f'<p style="color:#888; margin:4px 0 0 0; font-size:0.9rem;">'                f'Category: {cat}</p></div>',
+                unsafe_allow_html=True
+            )
+
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Your Score",      score,     delta=None)
+            c2.metric("Industry Avg",    ind_avg,   delta=round(score - ind_avg, 1))
+            c3.metric("Top Competitor",  f"{top_score} ({top_brand})", delta=None)
+
+            ca, cb2 = st.columns(2)
+            ca.metric("Category Avg",    cat_avg,   delta=round(score - cat_avg, 1))
+            cb2.metric("Gap to Top",     gap_top,   delta=None)
+
+            st.markdown("**💡 Insight:**")
+            st.info(insight)
+
+            st.markdown("### Dimension vs Industry")
+            dh1, dh2, dh3, dh4 = st.columns([3,1,1,1])
+            dh1.markdown("**Dimension**")
+            dh2.markdown("**Yours**")
+            dh3.markdown("**Industry**")
+            dh4.markdown("**Gap**")
+
+            for dg in bench["dimension_gaps"]:
+                dc1, dc2, dc3, dc4 = st.columns([3,1,1,1])
+                dc1.write(dg["dimension"])
+                dc2.write(dg["user_score"])
+                dc3.write(dg["industry_avg"])
+                gap_val = dg["gap"]
+                gap_str = "+{:.1f}".format(gap_val) if gap_val > 0 else "{:.1f}".format(gap_val)
+                gap_col = "green" if gap_val > 0 else "red" if gap_val < -2 else "orange"
+                dc4.markdown(
+                    f'<span style="color:{gap_col}; font-weight:600;">{gap_str}</span>',
+                    unsafe_allow_html=True
+                )
+
+            st.divider()
 
             # ── DIMENSION BREAKDOWN TABLE ──
             st.markdown("### Score Breakdown")

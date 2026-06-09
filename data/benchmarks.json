@@ -1,0 +1,307 @@
+{
+  "computed_at": "2026-06-09",
+  "global": {
+    "total_ads": 50,
+    "avg_score": 73.1,
+    "min_score": 61,
+    "max_score": 84,
+    "top_brand": "NikeIndia",
+    "top_score": 84,
+    "top_platform": "Instagram",
+    "top_category": "Sports & Fitness",
+    "avg_dimensions": {
+      "Hook Strength": 7.9,
+      "Value Proposition": 7.7,
+      "Call to Action": 6.6,
+      "Emotional Trigger": 6.2,
+      "Clarity & Readability": 5.3,
+      "Length Optimization": 10.0
+    },
+    "all_scores_sorted": [
+      61,
+      62,
+      62,
+      63,
+      63,
+      64,
+      64,
+      66,
+      68,
+      69,
+      70,
+      70,
+      70,
+      72,
+      72,
+      72,
+      72,
+      72,
+      72,
+      73,
+      73,
+      73,
+      73,
+      74,
+      74,
+      74,
+      74,
+      74,
+      74,
+      74,
+      75,
+      76,
+      76,
+      76,
+      76,
+      76,
+      76,
+      76,
+      76,
+      77,
+      78,
+      79,
+      79,
+      79,
+      79,
+      80,
+      80,
+      80,
+      81,
+      84
+    ],
+    "score_distribution": [
+      0.0,
+      0.0,
+      0.0,
+      90.0,
+      10.0
+    ]
+  },
+  "by_category": {
+    "Sports & Fitness": {
+      "count": 10,
+      "avg_score": 75.7,
+      "min_score": 66,
+      "max_score": 84,
+      "top_brand": "NikeIndia",
+      "top_score": 84,
+      "top_platform": "Instagram",
+      "avg_dimensions": {
+        "Hook Strength": 8.0,
+        "Value Proposition": 7.8,
+        "Call to Action": 7.2,
+        "Emotional Trigger": 6.6,
+        "Clarity & Readability": 6.0,
+        "Length Optimization": 10.0
+      },
+      "brands": [
+        "NikeIndia",
+        "AdidasIndia",
+        "ReebokIndia",
+        "MuscleBlaze",
+        "Optimum Nutrition",
+        "HK Vitals",
+        "CultFit",
+        "Anytime Fitness",
+        "Puma India",
+        "Under Armour India"
+      ]
+    },
+    "Beauty & Personal Care": {
+      "count": 9,
+      "avg_score": 70.4,
+      "min_score": 62,
+      "max_score": 80,
+      "top_brand": "Plum Goodness",
+      "top_score": 80,
+      "top_platform": "Facebook",
+      "avg_dimensions": {
+        "Hook Strength": 8.0,
+        "Value Proposition": 7.7,
+        "Call to Action": 5.4,
+        "Emotional Trigger": 6.7,
+        "Clarity & Readability": 4.4,
+        "Length Optimization": 10.0
+      },
+      "brands": [
+        "MamaEarth",
+        "WOW Skin Science",
+        "Plum Goodness",
+        "Nykaa",
+        "Lakme",
+        "Sugar Cosmetics",
+        "Minimalist",
+        "Dot and Key",
+        "Re'equil"
+      ]
+    },
+    "Electronics": {
+      "count": 9,
+      "avg_score": 72.6,
+      "min_score": 61,
+      "max_score": 80,
+      "top_brand": "OnePlus India",
+      "top_score": 80,
+      "top_platform": "YouTube",
+      "avg_dimensions": {
+        "Hook Strength": 8.0,
+        "Value Proposition": 7.4,
+        "Call to Action": 6.2,
+        "Emotional Trigger": 6.4,
+        "Clarity & Readability": 5.8,
+        "Length Optimization": 10.0
+      },
+      "brands": [
+        "BoAt",
+        "Noise",
+        "OnePlus India",
+        "Dell India",
+        "HP India",
+        "Lenovo India",
+        "OnePlus India",
+        "Realme India",
+        "Samsung India"
+      ]
+    },
+    "Apps & Services": {
+      "count": 7,
+      "avg_score": 74.4,
+      "min_score": 69,
+      "max_score": 79,
+      "top_brand": "Meesho",
+      "top_score": 79,
+      "top_platform": "Facebook",
+      "avg_dimensions": {
+        "Hook Strength": 7.7,
+        "Value Proposition": 7.6,
+        "Call to Action": 7.7,
+        "Emotional Trigger": 5.7,
+        "Clarity & Readability": 6.0,
+        "Length Optimization": 10.0
+      },
+      "brands": [
+        "Zomato",
+        "Swiggy",
+        "Urban Company",
+        "UrbanClap",
+        "Meesho",
+        "Zepto",
+        "Blinkit"
+      ]
+    },
+    "Education": {
+      "count": 3,
+      "avg_score": 73.3,
+      "min_score": 72,
+      "max_score": 74,
+      "top_brand": "Byju's",
+      "top_score": 74,
+      "top_platform": "Facebook",
+      "avg_dimensions": {
+        "Hook Strength": 8.0,
+        "Value Proposition": 7.0,
+        "Call to Action": 8.0,
+        "Emotional Trigger": 6.0,
+        "Clarity & Readability": 4.7,
+        "Length Optimization": 10.0
+      },
+      "brands": [
+        "Unacademy",
+        "Byju's",
+        "Physics Wallah"
+      ]
+    },
+    "Food & Beverage": {
+      "count": 3,
+      "avg_score": 74.3,
+      "min_score": 72,
+      "max_score": 76,
+      "top_brand": "Blue Tokai Coffee",
+      "top_score": 76,
+      "top_platform": "Instagram",
+      "avg_dimensions": {
+        "Hook Strength": 8.0,
+        "Value Proposition": 8.3,
+        "Call to Action": 6.3,
+        "Emotional Trigger": 6.0,
+        "Clarity & Readability": 6.0,
+        "Length Optimization": 10.0
+      },
+      "brands": [
+        "Blue Tokai Coffee",
+        "Sleepy Owl Coffee",
+        "Chaayos"
+      ]
+    },
+    "Fashion": {
+      "count": 7,
+      "avg_score": 72.0,
+      "min_score": 62,
+      "max_score": 79,
+      "top_brand": "Lenskart",
+      "top_score": 79,
+      "top_platform": "Facebook",
+      "avg_dimensions": {
+        "Hook Strength": 7.7,
+        "Value Proposition": 8.1,
+        "Call to Action": 6.4,
+        "Emotional Trigger": 5.9,
+        "Clarity & Readability": 4.9,
+        "Length Optimization": 10.0
+      },
+      "brands": [
+        "Wildcraft",
+        "Skybags",
+        "American Tourister",
+        "Lenskart",
+        "Specsmakers",
+        "FabIndia",
+        "Manyavar"
+      ]
+    },
+    "Health & Hygiene": {
+      "count": 2,
+      "avg_score": 70.5,
+      "min_score": 68,
+      "max_score": 73,
+      "top_brand": "Sirona",
+      "top_score": 73,
+      "top_platform": "Facebook",
+      "avg_dimensions": {
+        "Hook Strength": 8.0,
+        "Value Proposition": 8.0,
+        "Call to Action": 6.5,
+        "Emotional Trigger": 5.5,
+        "Clarity & Readability": 3.0,
+        "Length Optimization": 10.0
+      },
+      "brands": [
+        "Nua Woman",
+        "Sirona"
+      ]
+    }
+  },
+  "product_to_category": {
+    "running shoes": "Sports & Fitness",
+    "whey protein": "Sports & Fitness",
+    "gym membership": "Sports & Fitness",
+    "sports t-shirt": "Sports & Fitness",
+    "wireless earbuds": "Electronics",
+    "laptop": "Electronics",
+    "smartphone": "Electronics",
+    "lipstick": "Beauty & Personal Care",
+    "sunscreen": "Beauty & Personal Care",
+    "face wash": "Beauty & Personal Care",
+    "sanitary pads": "Health & Hygiene",
+    "ethnic wear": "Fashion",
+    "backpack": "Fashion",
+    "eyeglasses": "Fashion",
+    "grocery delivery app": "Apps & Services",
+    "e-commerce app": "Apps & Services",
+    "food delivery app": "Apps & Services",
+    "home services app": "Apps & Services",
+    "online learning platform": "Education",
+    "tea cafe": "Food & Beverage",
+    "specialty coffee": "Food & Beverage"
+  }
+}
