@@ -707,6 +707,79 @@ with tab2:
                     unsafe_allow_html=True
                 )
 
+            # ── BEFORE vs AFTER SCORE ──
+            st.markdown("### Before vs After Score")
+            from scoring.explainable_scorer import calculate_explainable_score
+            from scoring.benchmark_engine import calculate_benchmark
+
+            after_expl = calculate_explainable_score(st.session_state.rewritten_ad)
+
+            if not after_expl.get("error"):
+                after_score  = after_expl["total_score"]
+                after_grade  = after_expl["grade"]
+                before_score = expl["total_score"]
+                improvement  = after_score - before_score
+                imp_pct      = round(improvement / before_score * 100, 1) if before_score > 0 else 0
+
+                # Color based on improvement
+                imp_color = "#2ecc71" if improvement >= 10 else "#f39c12" if improvement >= 0 else "#e74c3c"
+
+                ba1, ba2, ba3 = st.columns(3)
+
+                with ba1:
+                    st.markdown("**🔴 Original Score**")
+                    st.markdown(
+                        f'<div style="background:#e74c3c22; border:2px solid #e74c3c; '
+                        f'border-radius:12px; padding:16px; text-align:center;">'                        f'<div style="font-size:2.5rem; font-weight:900; color:#e74c3c;">{before_score}</div>'                        f'<div style="color:#e74c3c; font-size:0.9rem;">{expl["grade"]}</div></div>',
+                        unsafe_allow_html=True
+                    )
+
+                with ba2:
+                    st.markdown("**🟢 Optimized Score**")
+                    st.markdown(
+                        f'<div style="background:#2ecc7122; border:2px solid #2ecc71; '
+                        f'border-radius:12px; padding:16px; text-align:center;">'                        f'<div style="font-size:2.5rem; font-weight:900; color:#2ecc71;">{after_score}</div>'                        f'<div style="color:#2ecc71; font-size:0.9rem;">{after_grade}</div></div>',
+                        unsafe_allow_html=True
+                    )
+
+                with ba3:
+                    st.markdown("**📈 Improvement**")
+                    imp_sign = "+" if improvement >= 0 else ""
+                    st.markdown(
+                        f'<div style="background:{imp_color}22; border:2px solid {imp_color}; '
+                        f'border-radius:12px; padding:16px; text-align:center;">'                        f'<div style="font-size:2.5rem; font-weight:900; color:{imp_color};">{imp_sign}{improvement}</div>'                        f'<div style="color:{imp_color}; font-size:0.9rem;">{imp_sign}{imp_pct}%</div></div>',
+                        unsafe_allow_html=True
+                    )
+
+                # Dimension comparison table
+                st.markdown("**Dimension Comparison:**")
+                dh1, dh2, dh3, dh4 = st.columns([3,1,1,1])
+                dh1.markdown("**Dimension**")
+                dh2.markdown("**Before**")
+                dh3.markdown("**After**")
+                dh4.markdown("**Change**")
+
+                for bd in expl["dimensions"]:
+                    dim_name = bd["dimension"]
+                    b_score  = bd["score"]
+                    a_score  = next(
+                        (d["score"] for d in after_expl["dimensions"] if d["dimension"] == dim_name),
+                        b_score
+                    )
+                    change   = a_score - b_score
+                    dc1, dc2, dc3, dc4 = st.columns([3,1,1,1])
+                    dc1.write(dim_name)
+                    dc2.write(b_score)
+                    dc3.write(a_score)
+                    ch_str = "+{}".format(change) if change > 0 else str(change)
+                    ch_col = "green" if change > 0 else "red" if change < 0 else "gray"
+                    dc4.markdown(
+                        f'<span style="color:{ch_col}; font-weight:600;">{ch_str}</span>',
+                        unsafe_allow_html=True
+                    )
+
+            st.divider()
+
             # ── WORD DIFF ──
             st.markdown("### Word-level Changes")
             st.caption("🟢 Green = added words | 🔴 Red strikethrough = removed words")
