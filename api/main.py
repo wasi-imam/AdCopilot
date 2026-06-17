@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routers import analyze as analyze_router
+from api.routers import benchmark as benchmark_router
+from api.routers import strategies as strategies_router
 
 app = FastAPI(
     title="AdCopilot API",
@@ -18,6 +20,16 @@ app.add_middleware(
 
 app.include_router(
     analyze_router.router,
+    prefix="/api/v1"
+)
+
+app.include_router(
+    benchmark_router.router,
+    prefix="/api/v1"
+)
+
+app.include_router(
+    strategies_router.router,
     prefix="/api/v1"
 )
 
