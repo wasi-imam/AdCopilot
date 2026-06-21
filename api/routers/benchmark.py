@@ -14,6 +14,7 @@ from api.schemas.benchmark import (
     DimensionGap
 )
 from scoring.benchmark_engine import calculate_benchmark
+from api.database import supabase
 
 router = APIRouter(prefix="/benchmark", tags=["Benchmark"])
 
@@ -48,6 +49,24 @@ async def benchmark_ad(request: BenchmarkRequest):
             )
             for dg in result.get("dimension_gaps", [])
         ]
+
+        # ── Save to Supabase (best-effort) ──
+        # Agar yeh fail ho jaye, user ko response phir bhi milna chahiye.
+        try:
+            supabase.table("benchmark_results").insert({
+                "analysis_id":     request.analysis_id,
+                "percentile":      result["percentile"],
+                "industry_avg":    result["industry_avg"],
+                "category":        result["category"],
+                "category_avg":    result["category_avg"],
+                "market_position": result["market_position"],
+                "gap_to_avg":      result["gap_to_avg"],
+                "gap_to_top":      result["gap_to_top"],
+                "insight":         result["insight"],
+            }).execute()
+        except Exception as db_error:
+            print(f"⚠️  Supabase insert failed: {db_error}")
+
 
         return BenchmarkResponse(
             success              = True,

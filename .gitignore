@@ -13,4 +13,6 @@ venv/
 Thumbs.dbs
 
 logs/
-cache_store.jsonchroma_db/
+cache_store.json
+chroma_db/
+.coverage

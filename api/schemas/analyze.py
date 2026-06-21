@@ -90,6 +90,9 @@ class CompetitorAd(BaseModel):
 class AnalyzeResponse(BaseModel):
     # Complete response — sab kuch ek jagah
     success:             bool
+    analysis_id:         Optional[str] = None
+    # Supabase mein insert hone ke baad mila id — taaki frontend
+    # ise baad mein /benchmark ya /strategies call mein use kar sake
     processing_time:     float   # seconds mein
 
     # Input echo — debugging ke liye useful

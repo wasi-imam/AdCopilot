@@ -6,6 +6,7 @@ from api.schemas.strategies import (
     DimensionComparison
 )
 from agents.strategy_builder import generate_all_strategies
+from api.database import supabase
 
 router = APIRouter(prefix="/strategies", tags=["Strategies"])
 
@@ -56,6 +57,22 @@ async def generate_strategies(request: StrategiesRequest):
             )
             for dim, scores in result["dimension_comparison"].items()
         ]
+
+        # ── Save to Supabase (best-effort) ──
+        # Teen strategies hain, isliye loop chala ke har ek ko alag row banayenge
+        try:
+            for s in strategies:
+                supabase.table("strategy_results").insert({
+                    "analysis_id":   request.analysis_id,
+                    "strategy_key":  s.strategy_key,
+                    "strategy_name": s.strategy_name,
+                    "rewritten_ad":  s.rewritten_ad,
+                    "score":         s.score,
+                    "grade":         s.grade,
+                    "is_winner":     s.is_winner,
+                }).execute()
+        except Exception as db_error:
+            print(f"⚠️  Supabase insert failed: {db_error}")
 
         return StrategiesResponse(
             success              = True,

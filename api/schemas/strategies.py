@@ -7,6 +7,8 @@ class GapInput(BaseModel):
     competitor_does: str
 
 class StrategiesRequest(BaseModel):
+    analysis_id: Optional[str] = None
+    # /analyze se mila id — taaki yeh strategies us analysis se link ho
     ad_copy: str
     gaps: list[GapInput]
     product_description: str

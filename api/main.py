@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from api.routers import analyze as analyze_router
 from api.routers import benchmark as benchmark_router
 from api.routers import strategies as strategies_router
@@ -37,6 +38,7 @@ app.include_router(
 def health_check():
     return {"status": "ok", "service": "AdCopilot API", "version": "1.0.0"}
 
-@app.get("/")
-def root():
-    return {"message": "AdCopilot API is running", "docs": "/docs", "health": "/health"}
+# ── Frontend serve karo ──
+# Yeh sabse last mein hona chahiye, taaki API routes (jaise /api/v1/analyze, /health, /docs)
+# pehle match ho jaayein, aur sirf bachi hui requests (jaise /, /style.css) frontend folder se serve hon.
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")

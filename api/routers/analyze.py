@@ -27,6 +27,7 @@ from rag.retriever              import get_similar_ads
 from agents.analyst             import analyze_gaps
 from agents.builder             import rewrite_ad
 from scoring.explainable_scorer import calculate_explainable_score
+from api.database import supabase
 
 # APIRouter — ek mini app jaise
 # prefix="/analyze" — har route /analyze se shuru hoga
@@ -161,9 +162,39 @@ async def analyze_ad(request: AnalyzeRequest):
         processing_time = round(time.time() - start_time, 2)
         # Kitne seconds lage — useful for performance monitoring
 
+        # ── STEP 5.5: Save to Supabase (best-effort) ──
+        # Agar yeh fail ho jaye, user ko response phir bhi milna chahiye.
+        # Isliye iska apna try/except hai, jo upar wale except block mein nahi jaata.
+        new_analysis_id = None
+        # None default — agar insert fail ho jaye toh yeh None hi rahega
+
+        try:
+            insert_result = supabase.table("analyses").insert({
+                "ad_copy":         request.ad_copy,
+                "product_desc":    request.product_description,
+                "rewritten_ad":    rewrite_raw["rewritten_ad"],
+                "total_score":     explainable_score.total_score,
+                "grade":           explainable_score.grade,
+                "one_liner":       explainable_score.one_liner,
+                "word_count":      explainable_score.word_count,
+                "processing_time": processing_time,
+                "dimensions":      [d.dict() for d in dimensions],
+                "gaps":            [g.dict() for g in gaps],
+                "competitor_ads":  [c.dict() for c in competitor_ads],
+                "top_3_fixes":     [f.dict() for f in top_3_fixes],
+            }).execute()
+
+            # insert_result.data — list of inserted rows (Supabase inserted row wapas bhejta hai)
+            # [0]["id"] — pehli (aur sirf) row ka id nikalo
+            new_analysis_id = insert_result.data[0]["id"]
+
+        except Exception as db_error:
+            print(f"⚠️  Supabase insert failed: {db_error}")
+
         # ── STEP 6: Return response ──
         return AnalyzeResponse(
             success             = True,
+            analysis_id         = new_analysis_id,
             processing_time     = processing_time,
             ad_copy             = request.ad_copy,
             product_description = request.product_description,

@@ -1,0 +1,277 @@
+/* ── Reset & Base ── */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #f7f7f8;
+    color: #1a1a1a;
+    line-height: 1.5;
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* ── Utility ── */
+.hidden {
+    display: none;
+}
+
+/* ── Header ── */
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+header h1 {
+    font-size: 2.2rem;
+    color: #2563eb;
+}
+
+.subtitle {
+    color: #666;
+    margin-top: 0.3rem;
+}
+
+/* ── Input Section ── */
+#input-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    margin-bottom: 1.5rem;
+}
+
+#input-section label {
+    display: block;
+    font-weight: 600;
+    margin-top: 1rem;
+    margin-bottom: 0.4rem;
+}
+
+#input-section label:first-child {
+    margin-top: 0;
+}
+
+textarea {
+    width: 100%;
+    padding: 0.7rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+}
+
+#analyze-btn {
+    margin-top: 1.2rem;
+    width: 100%;
+    padding: 0.8rem;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+#analyze-btn:hover {
+    background-color: #1d4ed8;
+}
+
+#analyze-btn:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+/* ── Loading & Error ── */
+#loading-section, #error-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+#error-section {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+/* ── Results ── */
+.score-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    margin-bottom: 1rem;
+}
+
+#result-grade {
+    font-size: 2.5rem;
+    color: #2563eb;
+}
+
+#result-score {
+    font-size: 1.1rem;
+    color: #444;
+    margin-top: 0.3rem;
+}
+
+#result-one-liner {
+    margin-top: 0.5rem;
+    color: #666;
+    font-style: italic;
+}
+
+.result-block {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    margin-bottom: 1rem;
+}
+
+.result-block h3 {
+    margin-bottom: 0.6rem;
+    color: #2563eb;
+}
+
+/* ── Dimension Cards (filled by JS) ── */
+.dimension-item {
+    border-bottom: 1px solid #eee;
+    padding: 0.6rem 0;
+}
+
+.dimension-item:last-child {
+    border-bottom: none;
+}
+
+.dimension-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+}
+
+.dimension-reason {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 0.2rem;
+}
+
+/* ── Gap Items (filled by JS) ── */
+.gap-item {
+    border-left: 3px solid #f59e0b;
+    padding: 0.5rem 0.8rem;
+    margin-bottom: 0.6rem;
+    background: #fffbeb;
+    border-radius: 0 6px 6px 0;
+}
+
+.gap-item.severity-high {
+    border-left-color: #dc2626;
+}
+
+.gap-item.severity-low {
+    border-left-color: #65a30d;
+}
+
+/* ── Action Buttons ── */
+.action-buttons {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 0.5rem;
+}
+
+.action-buttons button {
+    flex: 1;
+    padding: 0.7rem;
+    border: 1px solid #2563eb;
+    background: white;
+    color: #2563eb;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.action-buttons button:hover {
+    background: #2563eb;
+    color: white;
+}
+
+.action-buttons button:disabled {
+    border-color: #9ca3af;
+    color: #9ca3af;
+    cursor: not-allowed;
+    background: white;
+}
+
+/* ── Benchmark Section ── */
+#benchmark-position {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2563eb;
+    margin-bottom: 0.5rem;
+}
+
+#benchmark-insight {
+    color: #555;
+    margin-bottom: 1rem;
+}
+
+/* ── Strategy Cards ── */
+.strategy-card {
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.strategy-card.winner {
+    border-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.strategy-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.strategy-header h4 {
+    color: #1a1a1a;
+}
+
+.strategy-badge {
+    background: #16a34a;
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+.strategy-score {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+}
+
+.strategy-text {
+    color: #333;
+}

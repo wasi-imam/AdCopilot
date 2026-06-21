@@ -12,6 +12,8 @@ class DimensionInput(BaseModel):
 
 
 class BenchmarkRequest(BaseModel):
+    analysis_id:         Optional[str] = None
+    # /analyze se mila id — taaki yeh benchmark us analysis se link ho
     user_score:          int
     dimensions:          list[DimensionInput]
     product_description: str

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdCopilot — AI Ad Copy Optimizer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>AdCopilot</h1>
+        <p class="subtitle">AI-powered ad copy analysis &amp; optimization</p>
+    </header>
+
+    <main>
+        <!-- ── Input Form ── -->
+        <section id="input-section">
+            <label for="ad-copy-input">Your Ad Copy</label>
+            <textarea id="ad-copy-input" rows="4" placeholder="e.g. Get fit fast with our new protein powder! Limited time offer."></textarea>
+
+            <label for="product-desc-input">Product Description</label>
+            <textarea id="product-desc-input" rows="3" placeholder="e.g. A whey protein supplement for muscle building, targeted at gym enthusiasts"></textarea>
+
+            <button id="analyze-btn">Analyze Ad</button>
+        </section>
+
+        <!-- ── Loading Indicator ── -->
+        <section id="loading-section" class="hidden">
+            <p>Analyzing your ad... this may take a few seconds.</p>
+        </section>
+
+        <!-- ── Error Display ── -->
+        <section id="error-section" class="hidden">
+            <p id="error-message"></p>
+        </section>
+
+        <!-- ── Results ── -->
+        <section id="results-section" class="hidden">
+
+            <div class="score-card">
+                <h2 id="result-grade">-</h2>
+                <p id="result-score">Score: -</p>
+                <p id="result-one-liner">-</p>
+            </div>
+
+            <div class="result-block">
+                <h3>Rewritten Ad</h3>
+                <p id="result-rewritten-ad">-</p>
+            </div>
+
+            <div class="result-block">
+                <h3>What Changed</h3>
+                <p id="result-changes"></p>
+            </div>
+
+            <div class="result-block">
+                <h3>Dimension Scores</h3>
+                <div id="result-dimensions"></div>
+            </div>
+
+            <div class="result-block">
+                <h3>Gaps vs Competitors</h3>
+                <div id="result-gaps"></div>
+            </div>
+
+            <!-- ── Action Buttons ── -->
+            <div class="action-buttons">
+                <button id="benchmark-btn">Compare to Industry</button>
+                <button id="strategies-btn">Generate Strategies</button>
+            </div>
+
+        </section>
+
+        <!-- ── Benchmark Loading ── -->
+        <section id="benchmark-loading" class="hidden">
+            <p>Comparing to industry benchmarks...</p>
+        </section>
+
+        <!-- ── Benchmark Results ── -->
+        <section id="benchmark-section" class="hidden">
+            <div class="result-block">
+                <h3>Industry Comparison</h3>
+                <p id="benchmark-position">-</p>
+                <p id="benchmark-insight"></p>
+                <div id="benchmark-dimensions"></div>
+            </div>
+        </section>
+
+        <!-- ── Strategies Loading ── -->
+        <section id="strategies-loading" class="hidden">
+            <p>Generating strategies... this may take a few seconds.</p>
+        </section>
+
+        <!-- ── Strategies Results ── -->
+        <section id="strategies-section" class="hidden">
+            <div class="result-block">
+                <h3>Alternative Strategies</h3>
+                <p id="strategies-recommendation"></p>
+                <div id="strategies-cards"></div>
+            </div>
+        </section>
+    </main>  
+
+    <script src="script.js"></script>
+</body>
+</html>
