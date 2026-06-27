@@ -16,3 +16,5 @@ logs/
 cache_store.json
 chroma_db/
 .coverage
+
+htmlcov/
