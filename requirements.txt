@@ -11,6 +11,6 @@ chromadb==0.4.24
 sentence-transformers==2.7.0
 transformers==4.38.0
 supabase==2.7.1
-httpx==0.24.1
+httpx==0.26.0
 python-multipart==0.0.9
 numpy==1.26.4
