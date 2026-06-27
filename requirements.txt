@@ -12,3 +12,4 @@ sentence-transformers==2.7.0
 supabase==2.5.0
 httpx==0.24.1
 python-multipart==0.0.9
+numpy==1.26.4
