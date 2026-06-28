@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -19,26 +20,24 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-app.include_router(
-    analyze_router.router,
-    prefix="/api/v1"
-)
+@app.on_event("startup")
+async def startup_event():
+    """Auto-build ChromaDB if it doesn't exist on startup."""
+    chroma_path = "./chroma_db"
+    if not os.path.exists(chroma_path):
+        print("ChromaDB not found — building from competitors.json...")
+        from rag.embedder import build_vector_db
+        build_vector_db()
+        print("ChromaDB build complete!")
+    else:
+        print("ChromaDB found — skipping rebuild.")
 
-app.include_router(
-    benchmark_router.router,
-    prefix="/api/v1"
-)
-
-app.include_router(
-    strategies_router.router,
-    prefix="/api/v1"
-)
+app.include_router(analyze_router.router, prefix="/api/v1")
+app.include_router(benchmark_router.router, prefix="/api/v1")
+app.include_router(strategies_router.router, prefix="/api/v1")
 
 @app.get("/health")
 def health_check():
     return {"status": "ok", "service": "AdCopilot API", "version": "1.0.0"}
 
-# ── Frontend serve karo ──
-# Yeh sabse last mein hona chahiye, taaki API routes (jaise /api/v1/analyze, /health, /docs)
-# pehle match ho jaayein, aur sirf bachi hui requests (jaise /, /style.css) frontend folder se serve hon.
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
