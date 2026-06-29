@@ -5,6 +5,39 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111-green)](https://fastapi.tiangolo.com)
 [![LLM](https://img.shields.io/badge/LLM-Llama%203.3%2070B-purple)](https://groq.com)
 
+---
+
+## 🌐 Live Demo
+
+🚀 **Application:** https://adcopilot.onrender.com
+
+📚 **API Documentation:** https://adcopilot.onrender.com/docs
+
+---
+
+## 📸 Screenshots
+
+### 🏠 Home Page
+
+<img width="1063" height="716" alt="image" src="https://github.com/user-attachments/assets/3d10f4c1-6b19-4f64-bfe2-88e3e724db59" />
+
+### 📊 Explainable AI Scoring
+
+Evaluate advertisements across six explainable dimensions including hook strength, CTA effectiveness, emotional appeal, clarity, readability, and optimization.
+
+<img width="1127" height="605" alt="image" src="https://github.com/user-attachments/assets/c1dadabe-4f10-4f9a-aa23-15cc1a2b0eb6" />
+
+### 🔍 Competitor Benchmarking
+
+Identify content gaps by comparing advertisements against competitor examples retrieved through the RAG pipeline.
+
+<img width="1132" height="632" alt="image" src="https://github.com/user-attachments/assets/ebc3668d-8b34-4521-a5cd-6c569b6989b6" />
+
+### ✨ AI Advertisement Optimization
+
+Generate an improved advertisement with detailed explanations of every enhancement.
+
+
 ## 🧠 What is AdCopilot?
 AdCopilot is a full-stack GenAI platform that helps marketers **analyze, benchmark, and optimize** advertising copy using RAG pipelines, vector search, and Large Language Models.
 
